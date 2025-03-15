@@ -1,6 +1,6 @@
 name: responsive_sliding_drawer
 description: "A responsive sliding drawer widget inspired by the official ChatGPT Android app"
-version: 1.1.0
+version: 1.2.0
 homepage: https://github.com/hruzgar/flutter_responsive_sliding_drawer
 
 environment:

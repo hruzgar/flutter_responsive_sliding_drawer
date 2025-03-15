@@ -1,31 +1,26 @@
 import 'package:flutter/material.dart';
 
+class SlidingDrawerController {
+  _SlidingDrawerState? _state;
+  void open() => _state?._openDrawer();
+  void close() => _state?._closeDrawer();
+  void toggle() => _state?._toggleDrawer();
+}
+
 class SlidingDrawer extends StatefulWidget {
   final Widget drawer;
   final Widget body;
   final Duration animationDuration;
-
-  /// Fraction of the screen width that the drawer covers when fully open on phones.
   final double openRatio;
-
-  /// Fraction of the screen width that the drawer covers when fully open on desktops.
   final double desktopOpenRatio;
-
-  /// Minimum drawer width on desktop (in pixels).
   final double desktopMinDrawerWidth;
-
-  /// Maximum drawer width on desktop (in pixels).
   final double desktopMaxDrawerWidth;
-
-  /// Swipe velocity threshold in pixels per second.
   final double swipeVelocityThreshold;
-
-  /// Drag percentage threshold to complete open/close when swipe velocity is low.
   final double dragPercentageThreshold;
-
-  /// Callback that gets triggered when the drawer animation finishes.
-  /// [isOpen] is true when the drawer finishes opening and false when it finishes closing.
   final void Function(bool isOpen)? onAnimationComplete;
+  final double dividerWidth;
+  final bool centerDivider;
+  final SlidingDrawerController? controller;
 
   const SlidingDrawer({
     Key? key,
@@ -39,6 +34,9 @@ class SlidingDrawer extends StatefulWidget {
     this.swipeVelocityThreshold = 500.0,
     this.dragPercentageThreshold = 0.5,
     this.onAnimationComplete,
+    this.dividerWidth = 20.0,
+    this.centerDivider = true,
+    this.controller,
   }) : super(key: key);
 
   @override
@@ -49,17 +47,10 @@ class _SlidingDrawerState extends State<SlidingDrawer>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   double? _desktopDrawerWidth;
-
-  /// Accumulates extra drag that exceeds the limits.
   double _resizeOvershoot = 0.0;
-
-  /// Tracks whether the mouse is hovering over the divider.
   bool _isHoveringDivider = false;
-
-  /// Indicates that the divider is being dragged.
   bool _isResizing = false;
 
-  // Consider devices with width >= 600 as desktop.
   bool get isDesktop => MediaQuery.of(context).size.width >= 600;
 
   @override
@@ -77,6 +68,16 @@ class _SlidingDrawerState extends State<SlidingDrawer>
         widget.onAnimationComplete?.call(false);
       }
     });
+    widget.controller?._state = this;
+  }
+
+  @override
+  void didUpdateWidget(covariant SlidingDrawer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller?._state = null;
+      widget.controller?._state = this;
+    }
   }
 
   @override
@@ -92,16 +93,22 @@ class _SlidingDrawerState extends State<SlidingDrawer>
     }
   }
 
-  /// Toggles the drawer open/closed.
   void _toggleDrawer() {
     if (_controller.value >= 0.99) {
-      _controller.animateTo(0.0, duration: widget.animationDuration);
+      _closeDrawer();
     } else {
-      _controller.animateTo(1.0, duration: widget.animationDuration);
+      _openDrawer();
     }
   }
 
-  /// Returns the drawer width.
+  void _openDrawer() {
+    _controller.animateTo(1.0, duration: widget.animationDuration);
+  }
+
+  void _closeDrawer() {
+    _controller.animateTo(0.0, duration: widget.animationDuration);
+  }
+
   double get _currentDrawerWidth {
     final screenWidth = MediaQuery.of(context).size.width;
     return isDesktop
@@ -109,7 +116,6 @@ class _SlidingDrawerState extends State<SlidingDrawer>
         : widget.openRatio * screenWidth;
   }
 
-  /// Common drag update handler.
   void _handleDragUpdate(DragUpdateDetails details) {
     if (_isResizing) return;
     final effectiveWidth = _currentDrawerWidth;
@@ -117,26 +123,18 @@ class _SlidingDrawerState extends State<SlidingDrawer>
     _controller.value += delta;
   }
 
-  /// Common drag end handler.
   void _handleDragEnd(DragEndDetails details) {
     if (_isResizing) return;
     final velocity = details.velocity.pixelsPerSecond.dx;
     if (velocity.abs() >= widget.swipeVelocityThreshold) {
-      if (velocity > 0) {
-        _controller.animateTo(1.0, duration: widget.animationDuration);
-      } else {
-        _controller.animateTo(0.0, duration: widget.animationDuration);
-      }
+      velocity > 0 ? _openDrawer() : _closeDrawer();
     } else {
-      if (_controller.value >= widget.dragPercentageThreshold) {
-        _controller.animateTo(1.0, duration: widget.animationDuration);
-      } else {
-        _controller.animateTo(0.0, duration: widget.animationDuration);
-      }
+      _controller.value >= widget.dragPercentageThreshold
+          ? _openDrawer()
+          : _closeDrawer();
     }
   }
 
-  /// Handles divider drag for resizing.
   void _handleDividerPanUpdate(DragUpdateDetails details) {
     if (_controller.value < 0.99) return;
     double delta = details.delta.dx;
@@ -182,13 +180,11 @@ class _SlidingDrawerState extends State<SlidingDrawer>
   @override
   Widget build(BuildContext context) {
     final drawerWidth = _currentDrawerWidth;
-    // Consider the drawer open when _controller.value is nearly 1.
     final bool drawerOpen = _controller.value >= 0.99;
 
     if (isDesktop) {
       return Stack(
         children: [
-          // The main body is positioned with a left offset that grows as the drawer opens.
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
@@ -202,7 +198,6 @@ class _SlidingDrawerState extends State<SlidingDrawer>
               );
             },
           ),
-          // The drawer slides in from the left.
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
@@ -217,7 +212,6 @@ class _SlidingDrawerState extends State<SlidingDrawer>
               );
             },
           ),
-          // Left-edge drag area (about 50 pixels wide).
           Positioned(
             left: _controller.value < 0.5 ? 0 : drawerWidth,
             top: 0,
@@ -229,13 +223,15 @@ class _SlidingDrawerState extends State<SlidingDrawer>
               onHorizontalDragEnd: _handleDragEnd,
             ),
           ),
-          // Draggable divider for resizing the drawer.
           if (drawerOpen)
             Positioned(
               top: 0,
               bottom: 0,
-              left: drawerWidth - 10,
-              width: 20,
+              left:
+                  widget.centerDivider
+                      ? drawerWidth - widget.dividerWidth / 2
+                      : 0,
+              width: widget.dividerWidth,
               child: MouseRegion(
                 onEnter: (_) => setState(() => _isHoveringDivider = true),
                 onExit: (_) => setState(() => _isHoveringDivider = false),
@@ -276,10 +272,8 @@ class _SlidingDrawerState extends State<SlidingDrawer>
         ],
       );
     } else {
-      // Mobile: Use the original sliding behavior.
       return Stack(
         children: [
-          // Drawer layer.
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
@@ -298,7 +292,6 @@ class _SlidingDrawerState extends State<SlidingDrawer>
               );
             },
           ),
-          // Body layer.
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
@@ -316,19 +309,6 @@ class _SlidingDrawerState extends State<SlidingDrawer>
               );
             },
           ),
-          // Left-edge drag area for mobile.
-          if (!isDesktop && _controller.value == 0.0)
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 20,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onHorizontalDragUpdate: _handleDragUpdate,
-                onHorizontalDragEnd: _handleDragEnd,
-              ),
-            ),
         ],
       );
     }
@@ -336,6 +316,7 @@ class _SlidingDrawerState extends State<SlidingDrawer>
 
   @override
   void dispose() {
+    widget.controller?._state = null;
     _controller.dispose();
     super.dispose();
   }
