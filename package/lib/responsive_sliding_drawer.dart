@@ -230,7 +230,7 @@ class _SlidingDrawerState extends State<SlidingDrawer>
               left:
                   widget.centerDivider
                       ? drawerWidth - widget.dividerWidth / 2
-                      : 0,
+                      : drawerWidth,
               width: widget.dividerWidth,
               child: MouseRegion(
                 onEnter: (_) => setState(() => _isHoveringDivider = true),
