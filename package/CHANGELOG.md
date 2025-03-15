@@ -13,3 +13,7 @@ Added parameters for divider width and center placement of divider on desktop. A
 ## 1.3.0
 
 All bugs and behavioral issues were fixed. Ready for final release.
+
+## 1.3.1
+
+Added descriptions for the new parameters in the readme.

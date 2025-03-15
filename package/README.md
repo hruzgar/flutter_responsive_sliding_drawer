@@ -129,15 +129,18 @@ class MainContent extends StatelessWidget {
 
 ### Customization Options
 
-You can tweak the following parameters when creating the `SlidingDrawer`:
+When creating a `SlidingDrawer`, you can customize its behavior and appearance using the following parameters:
 
-- **`animationDuration`**: Duration of the open/close animation.
-- **`openRatio`**: Fraction of the screen width that the drawer covers when fully open on mobile.
-- **`desktopOpenRatio`**: Fraction of the screen width for the open drawer on desktops.
-- **`desktopMinDrawerWidth`** & **`desktopMaxDrawerWidth`**: Limits for the drawer width on desktop.
-- **`swipeVelocityThreshold`**: Determines the minimum swipe velocity to trigger the open/close action.
-- **`dragPercentageThreshold`**: The drag percentage needed to complete an open/close action if swipe velocity is low.
-- **`onAnimationComplete`**: Callback function to perform actions once the drawer has finished animating.
+- **`animationDuration`**: The duration of the open/close animation.
+- **`openRatio`**: The fraction of the screen width that the drawer covers when fully open on mobile.
+- **`desktopOpenRatio`**: The fraction of the screen width for the open drawer on desktop devices.
+- **`desktopMinDrawerWidth`** & **`desktopMaxDrawerWidth`**: The minimum and maximum widths allowed for the drawer on desktop devices.
+- **`swipeVelocityThreshold`**: The minimum swipe velocity required to trigger the open/close action.
+- **`dragPercentageThreshold`**: The drag percentage needed to complete an open/close action if the swipe velocity is low.
+- **`onAnimationComplete`**: A callback function that is called once the drawer has finished animating.
+- **`dividerWidth`**: The width of the draggable divider between the drawer and the body on desktop devices.
+- **`centerDivider`**: A boolean that determines whether the divider is centered along the edge of the open drawer.
+- **`controller`**: An optional `SlidingDrawerController` that allows you to programmatically open, close, or toggle the drawer.
 
 ## Additional Information
 
