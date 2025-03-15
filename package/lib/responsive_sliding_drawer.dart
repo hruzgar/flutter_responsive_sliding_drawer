@@ -204,10 +204,14 @@ class _SlidingDrawerState extends State<SlidingDrawer>
               final dx = -drawerWidth * (1 - _controller.value);
               return Transform.translate(
                 offset: Offset(dx, 0),
-                child: Container(
-                  width: drawerWidth,
-                  height: MediaQuery.of(context).size.height,
-                  child: widget.drawer,
+                child: GestureDetector(
+                  onHorizontalDragUpdate: _handleDragUpdate,
+                  onHorizontalDragEnd: _handleDragEnd,
+                  child: Container(
+                    width: drawerWidth,
+                    height: MediaQuery.of(context).size.height,
+                    child: widget.drawer,
+                  ),
                 ),
               );
             },

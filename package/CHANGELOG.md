@@ -8,8 +8,8 @@ Changed behavior on desktop so that the main window does not get cut off from th
 
 ## 1.2.0
 
-Added parameters for divider width and center placement of divider on desktop. Also removed unnecessary code for mobile and refactored codebase. With this I think the codebase is pretty stable, good designed etc. I don't know if I will update this at all in the future (because it's perfect already).
+Added parameters for divider width and center placement of divider on desktop. Also removed unnecessary code for mobile and refactored codebase. 
 
-## 1.2.1 
+## 1.3.0
 
-Fixed small centerDivider parameter bug.
+All bugs and behavioral issues were fixed. Ready for final release.

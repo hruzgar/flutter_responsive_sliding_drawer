@@ -26,6 +26,8 @@ class HomeScreen extends StatelessWidget {
     return SlidingDrawer(
       drawer: const DrawerContent(),
       body: const MainContent(),
+      centerDivider: false,
+      dividerWidth: 4,
     );
   }
 }
