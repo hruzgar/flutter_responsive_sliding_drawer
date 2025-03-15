@@ -150,11 +150,10 @@ packages:
   responsive_sliding_drawer:
     dependency: "direct main"
     description:
-      name: responsive_sliding_drawer
-      sha256: "336222215e1bf57c5887dafc31f29d7b6f41e69e2beab6fb0eefcc511d6690e6"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
+      path: "../package"
+      relative: true
+    source: path
+    version: "1.0.1"
   sky_engine:
     dependency: transitive
     description: flutter

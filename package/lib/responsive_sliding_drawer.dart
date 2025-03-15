@@ -108,7 +108,7 @@ class _SlidingDrawerState extends State<SlidingDrawer>
   double get _currentDrawerWidth {
     final screenWidth = MediaQuery.of(context).size.width;
     return isDesktop
-        ? _desktopDrawerWidth ?? (widget.desktopOpenRatio * screenWidth)
+        ? (_desktopDrawerWidth ?? (widget.desktopOpenRatio * screenWidth))
         : widget.openRatio * screenWidth;
   }
 
@@ -137,7 +137,7 @@ class _SlidingDrawerState extends State<SlidingDrawer>
     }
   }
 
-  /// Handles drag updates on the divider.
+  /// Handles drag updates on the divider (for resizing the desktop drawer).
   void _handleDividerPanUpdate(DragUpdateDetails details) {
     if (_controller.value < 0.99) return;
     double delta = details.delta.dx;
@@ -188,55 +188,31 @@ class _SlidingDrawerState extends State<SlidingDrawer>
     // We consider the drawer fully open if the controller's value is 0.99 or above.
     final bool drawerOpen = _controller.value >= 0.99;
 
-    return Stack(
-      children: [
-        // Drawer layer.
-        AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            final dx = -drawerWidth * (1 - _controller.value);
-            return Transform.translate(
-              offset: Offset(dx, 0),
-              child: GestureDetector(
-                onHorizontalDragUpdate: _handleDragUpdate,
-                onHorizontalDragEnd: _handleDragEnd,
-                child: Container(
-                  width: drawerWidth,
-                  height: MediaQuery.of(context).size.height,
-                  child: widget.drawer,
-                ),
+    if (isDesktop) {
+      // For desktop, we wrap the Row in a Stack so we can overlay a left-edge drag area.
+      return Stack(
+        children: [
+          Row(
+            children: [
+              // Animated container for the drawer sidebar.
+              AnimatedContainer(
+                duration: widget.animationDuration,
+                width: drawerWidth * _controller.value,
+                child:
+                    _controller.value > 0
+                        ? GestureDetector(
+                          onHorizontalDragUpdate: _handleDragUpdate,
+                          onHorizontalDragEnd: _handleDragEnd,
+                          child: widget.drawer,
+                        )
+                        : null,
               ),
-            );
-          },
-        ),
-        // Body layer.
-        AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            final dx = drawerWidth * _controller.value;
-            return Transform.translate(
-              offset: Offset(dx, 0),
-              // On mobile, the body remains interactive (to tap and close).
-              // On desktop, we intentionally leave the body without horizontal gestures.
-              child:
-                  isDesktop
-                      ? widget.body
-                      : GestureDetector(
-                        onTap: () {
-                          if (drawerOpen) _toggleDrawer();
-                        },
-                        onHorizontalDragUpdate: _handleDragUpdate,
-                        onHorizontalDragEnd: _handleDragEnd,
-                        child: widget.body,
-                      ),
-            );
-          },
-        ),
-        // Desktop left-edge drag area.
-        // When the drawer is mostly closed, it covers the left edge (x = 0).
-        // When the drawer is fully open, we shift it right so that it doesn't block the drawer's content,
-        // yet still lets you swipe left on the body to close the drawer.
-        if (isDesktop)
+              // The body takes the remaining space.
+              Expanded(child: widget.body),
+              // Optionally, add more widgets or a divider here if needed.
+            ],
+          ),
+          // Desktop left-edge drag area (approx. 50 pixels wide)
           Positioned(
             left: _controller.value < 0.5 ? 0 : drawerWidth,
             top: 0,
@@ -248,66 +224,111 @@ class _SlidingDrawerState extends State<SlidingDrawer>
               onHorizontalDragEnd: _handleDragEnd,
             ),
           ),
-        // Draggable divider – only on desktop and when the drawer is open.
-        // This remains on top so that if you drag near the edge of the open drawer, it takes priority.
-        if (isDesktop && drawerOpen)
-          Positioned(
-            top: 0,
-            bottom: 0,
-            left: drawerWidth - 10,
-            width: 20,
-            child: MouseRegion(
-              onEnter: (_) {
-                setState(() {
-                  _isHoveringDivider = true;
-                });
-              },
-              onExit: (_) {
-                setState(() {
-                  _isHoveringDivider = false;
-                });
-              },
-              cursor: SystemMouseCursors.resizeColumn,
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 200),
-                opacity:
-                    (_isHoveringDivider || _resizeOvershoot != 0.0) ? 1.0 : 0.0,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onPanStart: (details) {
-                    _resizeOvershoot = 0.0;
-                  },
-                  onPanUpdate: _handleDividerPanUpdate,
-                  onPanEnd: (details) {
-                    _resizeOvershoot = 0.0;
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
+          // Draggable divider for resizing the drawer can be added here if desired.
+          if (drawerOpen)
+            Positioned(
+              top: 0,
+              bottom: 0,
+              left: drawerWidth - 10,
+              width: 20,
+              child: MouseRegion(
+                onEnter: (_) {
+                  setState(() {
+                    _isHoveringDivider = true;
+                  });
+                },
+                onExit: (_) {
+                  setState(() {
+                    _isHoveringDivider = false;
+                  });
+                },
+                cursor: SystemMouseCursors.resizeColumn,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity:
+                      (_isHoveringDivider || _resizeOvershoot != 0.0)
+                          ? 1.0
+                          : 0.0,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onPanStart: (details) {
+                      _resizeOvershoot = 0.0;
+                    },
+                    onPanUpdate: _handleDividerPanUpdate,
+                    onPanEnd: (details) {
+                      _resizeOvershoot = 0.0;
+                    },
                     child: Container(
-                      width: 4,
-                      height: double.infinity,
-                      color: const Color.fromARGB(255, 103, 103, 103),
+                      alignment: Alignment.center,
+                      child: Container(
+                        width: 4,
+                        height: double.infinity,
+                        color: const Color.fromARGB(255, 103, 103, 103),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
+        ],
+      );
+    } else {
+      // Mobile: Keep the original stack layout.
+      return Stack(
+        children: [
+          // Drawer layer.
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              final dx = -drawerWidth * (1 - _controller.value);
+              return Transform.translate(
+                offset: Offset(dx, 0),
+                child: GestureDetector(
+                  onHorizontalDragUpdate: _handleDragUpdate,
+                  onHorizontalDragEnd: _handleDragEnd,
+                  child: Container(
+                    width: drawerWidth,
+                    height: MediaQuery.of(context).size.height,
+                    child: widget.drawer,
+                  ),
+                ),
+              );
+            },
           ),
-        // Left-edge drag area for mobile remains unchanged.
-        if (!isDesktop && _controller.value == 0.0)
-          Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: 20,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onHorizontalDragUpdate: _handleDragUpdate,
-              onHorizontalDragEnd: _handleDragEnd,
-            ),
+          // Body layer.
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              final dx = drawerWidth * _controller.value;
+              return Transform.translate(
+                offset: Offset(dx, 0),
+                child: GestureDetector(
+                  onTap: () {
+                    if (drawerOpen) _toggleDrawer();
+                  },
+                  onHorizontalDragUpdate: _handleDragUpdate,
+                  onHorizontalDragEnd: _handleDragEnd,
+                  child: widget.body,
+                ),
+              );
+            },
           ),
-      ],
-    );
+          // Left-edge drag area for mobile when the drawer is closed.
+          // if (!isDesktop && _controller.value == 0.0)
+          //   Positioned(
+          //     left: 0,
+          //     top: 0,
+          //     bottom: 0,
+          //     width: 20,
+          //     child: GestureDetector(
+          //       behavior: HitTestBehavior.opaque,
+          //       onHorizontalDragUpdate: _handleDragUpdate,
+          //       onHorizontalDragEnd: _handleDragEnd,
+          //     ),
+          //   ),
+        ],
+      );
+    }
   }
 
   @override
