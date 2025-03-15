@@ -2,6 +2,8 @@
 
 A responsive sliding drawer for Flutter inspired by the official ChatGPT Android app. This widget adapts to both mobile and desktop layouts, providing smooth sliding animations and customizable behavior based on your design requirements.
 
+![](https://raw.githubusercontent.com/hruzgar/flutter_responsive_sliding_drawer/refs/heads/main/example.gif)
+
 ## Features
 
 - **Responsive Layout:** Automatically adjusts behavior for mobile (gestures on the entire screen) and desktop (resizable drawer and distinct drag areas).
