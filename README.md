@@ -27,6 +27,7 @@ Add this package to your `pubspec.yaml`:
 dependencies:
   sliding_drawer: ^1.0.0
 ```
+> **Note:** Replace `^1.0.0` with the latest version or the version you need.
 
 Then run:
 
@@ -34,7 +35,7 @@ Then run:
 flutter pub get
 ```
 
-> **Note:** Replace `^1.0.0` with the latest version if needed.
+
 
 ## Usage
 
@@ -127,6 +128,7 @@ class MainContent extends StatelessWidget {
 }
 ```
 
+
 ### Customization Options
 
 When creating a `SlidingDrawer`, you can customize its behavior and appearance using the following parameters:
@@ -141,6 +143,12 @@ When creating a `SlidingDrawer`, you can customize its behavior and appearance u
 - **`dividerWidth`**: The width of the draggable divider between the drawer and the body on desktop devices.
 - **`centerDivider`**: A boolean that determines whether the divider is centered along the edge of the open drawer.
 - **`controller`**: An optional `SlidingDrawerController` that allows you to programmatically open, close, or toggle the drawer.
+- **`desktopDragAreaWidth`**: The width of the draggable area on desktop devices, allowing you to customize the zone from which you can swipe to open the drawer.
+- **`scrimColor`**: The base color used for the scrim overlay on mobile devices.
+- **`scrimColorOpacity`**: The maximum opacity (0.0 to 1.0) of the uniform scrim overlay when the drawer is fully open.
+- **`scrimGradientStartOpacity`**: The opacity (0.0 to 1.0) at the left edge of the scrim overlay gradient, which creates the hovering effect.
+- **`scrimGradientWidth`**: The width of the left-edge gradient strip on mobile devices.
+
 
 ## Additional Information
 

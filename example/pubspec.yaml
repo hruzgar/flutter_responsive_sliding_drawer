@@ -18,7 +18,7 @@ dependencies:
   flutter_slide_drawer: ^1.0.3
   
   responsive_sliding_drawer:
-    path: ../package/
+    path: ../
 
 dev_dependencies:
   flutter_test:

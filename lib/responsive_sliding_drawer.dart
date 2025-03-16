@@ -21,22 +21,37 @@ class SlidingDrawer extends StatefulWidget {
   final double dividerWidth;
   final bool centerDivider;
   final SlidingDrawerController? controller;
+  final double desktopDragAreaWidth;
+
+  final Color scrimColor;
+
+  final double scrimColorOpacity;
+
+  final double scrimGradientStartOpacity;
+
+  final double scrimGradientWidth;
 
   const SlidingDrawer({
     Key? key,
     required this.drawer,
     required this.body,
     this.animationDuration = const Duration(milliseconds: 60),
-    this.openRatio = 0.75,
+    this.openRatio = 0.80,
     this.desktopOpenRatio = 0.3,
     this.desktopMinDrawerWidth = 150.0,
     this.desktopMaxDrawerWidth = 400.0,
     this.swipeVelocityThreshold = 500.0,
     this.dragPercentageThreshold = 0.5,
     this.onAnimationComplete,
-    this.dividerWidth = 20.0,
+    this.dividerWidth = 5.0,
     this.centerDivider = true,
     this.controller,
+    this.desktopDragAreaWidth = 10.0,
+    this.scrimColor = Colors.black,
+    this.scrimColorOpacity = 0.5, // (0.0 to 1.0)
+    this.scrimGradientStartOpacity =
+        0.10, // Opacity at the left edge of the gradient (0.0 to 1.0)
+    this.scrimGradientWidth = 6.0, // Width of the left-edge gradient
   }) : super(key: key);
 
   @override
@@ -216,11 +231,12 @@ class _SlidingDrawerState extends State<SlidingDrawer>
               );
             },
           ),
+          // Desktop drag area defined by parameter.
           Positioned(
             left: _controller.value < 0.5 ? 0 : drawerWidth,
             top: 0,
             bottom: 0,
-            width: 50,
+            width: widget.desktopDragAreaWidth,
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onHorizontalDragUpdate: _handleDragUpdate,
@@ -229,12 +245,12 @@ class _SlidingDrawerState extends State<SlidingDrawer>
           ),
           if (drawerOpen)
             Positioned(
-              top: 0,
-              bottom: 0,
               left:
                   widget.centerDivider
                       ? drawerWidth - widget.dividerWidth / 2
                       : drawerWidth,
+              top: 0,
+              bottom: 0,
               width: widget.dividerWidth,
               child: MouseRegion(
                 onEnter: (_) => setState(() => _isHoveringDivider = true),
@@ -278,6 +294,82 @@ class _SlidingDrawerState extends State<SlidingDrawer>
     } else {
       return Stack(
         children: [
+          // Main window with swipe-open enabled.
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              final dx = drawerWidth * _controller.value;
+              return Transform.translate(
+                offset: Offset(dx, 0),
+                child: GestureDetector(
+                  onTap: () {
+                    if (drawerOpen) _toggleDrawer();
+                  },
+                  onHorizontalDragUpdate: _handleDragUpdate,
+                  onHorizontalDragEnd: _handleDragEnd,
+                  child: widget.body,
+                ),
+              );
+            },
+          ),
+          // Scrim overlay with uniform darkening and a left-edge gradient for the hovering effect.
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              final dx = drawerWidth * _controller.value;
+              return Transform.translate(
+                offset: Offset(dx, 0),
+                child: IgnorePointer(
+                  ignoring: _controller.value == 0,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (drawerOpen) _toggleDrawer();
+                    },
+                    onHorizontalDragUpdate: _handleDragUpdate,
+                    onHorizontalDragEnd: _handleDragEnd,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height,
+                      decoration: BoxDecoration(
+                        color: widget.scrimColor.withOpacity(
+                          widget.scrimColorOpacity * _controller.value,
+                        ),
+                      ),
+                      child: Stack(
+                        children: [
+                          // Left-edge gradient for hovering effect.
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            width: widget.scrimGradientWidth,
+                            child: IgnorePointer(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                    colors: [
+                                      widget.scrimColor.withOpacity(
+                                        widget.scrimGradientStartOpacity *
+                                            _controller.value,
+                                      ),
+                                      Colors.transparent,
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          // Drawer sliding in from the left.
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
@@ -292,23 +384,6 @@ class _SlidingDrawerState extends State<SlidingDrawer>
                     height: MediaQuery.of(context).size.height,
                     child: widget.drawer,
                   ),
-                ),
-              );
-            },
-          ),
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              final dx = drawerWidth * _controller.value;
-              return Transform.translate(
-                offset: Offset(dx, 0),
-                child: GestureDetector(
-                  onTap: () {
-                    if (drawerOpen) _toggleDrawer();
-                  },
-                  onHorizontalDragUpdate: _handleDragUpdate,
-                  onHorizontalDragEnd: _handleDragEnd,
-                  child: widget.body,
                 ),
               );
             },

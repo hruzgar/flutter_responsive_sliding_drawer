@@ -150,10 +150,10 @@ packages:
   responsive_sliding_drawer:
     dependency: "direct main"
     description:
-      path: "../package"
+      path: ".."
       relative: true
     source: path
-    version: "1.0.1"
+    version: "1.4.0"
   sky_engine:
     dependency: transitive
     description: flutter
