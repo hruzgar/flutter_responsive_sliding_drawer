@@ -81,6 +81,8 @@ class _SlidingDrawerState extends State<SlidingDrawer>
   _DrawerDragDirection? _dragDirection;
   _DrawerAction? _lastAction;
 
+  bool _hasStartedDragCallback = false;
+
   bool get isDesktop => MediaQuery.of(context).size.width >= 600;
 
   @override
@@ -128,6 +130,7 @@ class _SlidingDrawerState extends State<SlidingDrawer>
   void _handleDragStart(DragStartDetails details) {
     _dragStartedWhenOpen = _isOpen;
     _dragDirection = null;
+    _hasStartedDragCallback = false;
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
@@ -137,11 +140,17 @@ class _SlidingDrawerState extends State<SlidingDrawer>
       if (_dragStartedWhenOpen == false && details.primaryDelta! > 0) {
         _dragDirection = _DrawerDragDirection.opening;
         _lastAction = _DrawerAction.open;
-        widget.onStartedOpening?.call();
+        if (!_hasStartedDragCallback) {
+          widget.onStartedOpening?.call();
+          _hasStartedDragCallback = true;
+        }
       } else if (_dragStartedWhenOpen == true && details.primaryDelta! < 0) {
         _dragDirection = _DrawerDragDirection.closing;
         _lastAction = _DrawerAction.close;
-        widget.onStartedClosing?.call();
+        if (!_hasStartedDragCallback) {
+          widget.onStartedClosing?.call();
+          _hasStartedDragCallback = true;
+        }
       } else {
         return;
       }
@@ -173,10 +182,10 @@ class _SlidingDrawerState extends State<SlidingDrawer>
     }
     _dragStartedWhenOpen = null;
     _dragDirection = null;
+    _hasStartedDragCallback = false;
   }
 
   void _openDrawer() {
-    if (_isOpen) return; // Already open.
     _lastAction = _DrawerAction.open;
     if (_dragDirection == null) {
       widget.onStartedOpening?.call();
@@ -185,20 +194,20 @@ class _SlidingDrawerState extends State<SlidingDrawer>
       _isOpen = true;
       widget.onAnimationComplete?.call(true);
       widget.onFinishedOpening?.call();
-    } else {
-      _controller
-          .animateTo(1.0, duration: widget.animationDuration)
-          .then((_) {
-        _isOpen = true;
-        widget.onAnimationComplete?.call(true);
-        widget.onFinishedOpening?.call();
-      });
+      return;
     }
+    _controller
+        .animateTo(1.0, duration: widget.animationDuration)
+        .then((_) {
+      _isOpen = true;
+      widget.onAnimationComplete?.call(true);
+      widget.onFinishedOpening?.call();
+    });
   }
 
   void _closeDrawer() {
-    if (!_isOpen) return;
     _lastAction = _DrawerAction.close;
+    // Only call onStartedClosing if not already triggered by a drag.
     if (_dragDirection == null) {
       widget.onStartedClosing?.call();
     }
@@ -206,15 +215,15 @@ class _SlidingDrawerState extends State<SlidingDrawer>
       _isOpen = false;
       widget.onAnimationComplete?.call(false);
       widget.onFinishedClosing?.call();
-    } else {
-      _controller
-          .animateTo(0.0, duration: widget.animationDuration)
-          .then((_) {
-        _isOpen = false;
-        widget.onAnimationComplete?.call(false);
-        widget.onFinishedClosing?.call();
-      });
+      return;
     }
+    _controller
+        .animateTo(0.0, duration: widget.animationDuration)
+        .then((_) {
+      _isOpen = false;
+      widget.onAnimationComplete?.call(false);
+      widget.onFinishedClosing?.call();
+    });
   }
 
   double get _currentDrawerWidth {
@@ -274,7 +283,7 @@ class _SlidingDrawerState extends State<SlidingDrawer>
     if (isDesktop) {
       return Stack(
         children: [
-          // Main body that slides.
+          // Main body that slides (no drag gestures here on desktop).
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
@@ -284,36 +293,26 @@ class _SlidingDrawerState extends State<SlidingDrawer>
                 top: 0,
                 right: 0,
                 bottom: 0,
-                child: GestureDetector(
-                  onHorizontalDragStart: _handleDragStart,
-                  onHorizontalDragUpdate: _handleDragUpdate,
-                  onHorizontalDragEnd: _handleDragEnd,
-                  child: widget.body,
-                ),
+                child: widget.body,
               );
             },
           ),
-          // The drawer.
+          // The drawer (without drag gestures here).
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
               final dx = -drawerWidth * (1 - _controller.value);
               return Transform.translate(
                 offset: Offset(dx, 0),
-                child: GestureDetector(
-                  onHorizontalDragStart: _handleDragStart,
-                  onHorizontalDragUpdate: _handleDragUpdate,
-                  onHorizontalDragEnd: _handleDragEnd,
-                  child: Container(
-                    width: drawerWidth,
-                    height: MediaQuery.of(context).size.height,
-                    child: widget.drawer,
-                  ),
+                child: Container(
+                  width: drawerWidth,
+                  height: MediaQuery.of(context).size.height,
+                  child: widget.drawer,
                 ),
               );
             },
           ),
-          // Desktop drag area.
+          // Desktop drag area (the only draggable region on desktop).
           Positioned(
             left: _controller.value < 0.5 ? 0 : drawerWidth,
             top: 0,
@@ -373,7 +372,7 @@ class _SlidingDrawerState extends State<SlidingDrawer>
         ],
       );
     } else {
-      // Mobile layout.
+      // Mobile layout: The whole main area is draggable.
       return Stack(
         children: [
           AnimatedBuilder(

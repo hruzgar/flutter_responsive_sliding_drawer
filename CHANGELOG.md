@@ -12,7 +12,7 @@ Added parameters for divider width and center placement of divider on desktop. A
 
 ## 1.3.0
 
-All bugs and behavioral issues were fixed. Ready for final release.
+All bugs and behavioral issues were fixed.
 
 ## 1.3.1
 
@@ -20,5 +20,9 @@ Added descriptions for the new parameters in the readme.
 
 ## 1.4.0
 
-- Added scrim area for main window on mobile. Added additional parameters for adjustment. 
-- Made draggable area on desktop adjustable with custom parameter and adjusted default value.
+Added scrim area for main window on mobile. Added additional parameters for adjustment. 
+Made draggable area on desktop adjustable with custom parameter and adjusted default value.
+
+## 1.4.1
+
+All bugs fixed. Working as expected.
