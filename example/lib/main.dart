@@ -7,62 +7,99 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
+    
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sliding Drawer Demo',
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+      ),
       home: const HomeScreen(),
     );
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
-
+    
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+    
+class _HomeScreenState extends State<HomeScreen> {
+  final SlidingDrawerController _drawerController = SlidingDrawerController();
+  bool _showMainMenuButton = true;
+    
   @override
   Widget build(BuildContext context) {
     return SlidingDrawer(
-      drawer: const DrawerContent(),
-      body: const MainContent(),
+      controller: _drawerController,
+      onStartedOpening: () {
+        print("Opening started!");
+        setState(() {
+          _showMainMenuButton = false;
+        });
+      },
+      onFinishedOpening: () => print("Opening finished!"),
+      onStartedClosing: () => print("Closing started!"),
+      onFinishedClosing: () {
+        print("Closing finished!");
+        setState(() {
+          _showMainMenuButton = true;
+        });
+      },
+      drawer: DrawerContent(controller: _drawerController),
+      body: MainContent(
+        controller: _drawerController,
+        showMenuButton: _showMainMenuButton,
+      ),
     );
   }
 }
 
 class DrawerContent extends StatelessWidget {
-  const DrawerContent({Key? key}) : super(key: key);
-
+  final SlidingDrawerController controller;
+  const DrawerContent({Key? key, required this.controller}) : super(key: key);
+    
   @override
   Widget build(BuildContext context) {
-    // Wrap the entire drawer content in a Material widget.
     return Material(
-      child: Container(
-        color: Colors.blueGrey[100],
-        child: ListView(
+      color: Colors.grey[850],
+      child: Theme(
+        data: ThemeData(
+          brightness: Brightness.dark,
+          primaryColor: Colors.grey[900],
+        ),
+        child: Column(
           children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(color: Colors.blue),
-              child: Text(
-                'Drawer Header',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(color: Colors.white),
+            SafeArea(
+              child: AppBar(
+                backgroundColor: Colors.grey[900],
+                automaticallyImplyLeading: false,
+                title: const Text('Drawer Header'),
+                leading: IconButton(
+                  icon: const Icon(Icons.menu),
+                  onPressed: () => controller.close(),
+                ),
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onTap: () {
-                // Handle navigation if needed.
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {
-                // Handle navigation if needed.
-              },
+            Expanded(
+              child: ListView(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.home, color: Colors.white),
+                    title: const Text('Home', style: TextStyle(color: Colors.white)),
+                    onTap: () {},
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.settings, color: Colors.white),
+                    title: const Text('Settings', style: TextStyle(color: Colors.white)),
+                    onTap: () {},
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -72,12 +109,27 @@ class DrawerContent extends StatelessWidget {
 }
 
 class MainContent extends StatelessWidget {
-  const MainContent({Key? key}) : super(key: key);
-
+  final SlidingDrawerController controller;
+  final bool showMenuButton;
+  const MainContent({
+    Key? key,
+    required this.controller,
+    required this.showMenuButton,
+  }) : super(key: key);
+    
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sliding Drawer Example')),
+      appBar: AppBar(
+        title: const Text('Sliding Drawer Example'),
+        automaticallyImplyLeading: false,
+        leading: showMenuButton
+            ? IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () => controller.open(),
+              )
+            : null,
+      ),
       body: const Center(
         child: Text('Swipe right from the left edge to open the drawer'),
       ),
