@@ -7,15 +7,12 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-    
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sliding Drawer Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const HomeScreen(),
     );
   }
@@ -23,15 +20,15 @@ class MyApp extends StatelessWidget {
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
-    
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
-    
+
 class _HomeScreenState extends State<HomeScreen> {
   final SlidingDrawerController _drawerController = SlidingDrawerController();
   bool _showMainMenuButton = true;
-    
+
   @override
   Widget build(BuildContext context) {
     return SlidingDrawer(
@@ -55,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
         controller: _drawerController,
         showMenuButton: _showMainMenuButton,
       ),
+      lightShadow: true,
     );
   }
 }
@@ -62,15 +60,15 @@ class _HomeScreenState extends State<HomeScreen> {
 class DrawerContent extends StatelessWidget {
   final SlidingDrawerController controller;
   const DrawerContent({Key? key, required this.controller}) : super(key: key);
-    
+
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.grey[850],
+      color: Colors.grey[900],
       child: Theme(
         data: ThemeData(
           brightness: Brightness.dark,
-          primaryColor: Colors.grey[900],
+          primaryColor: const Color.fromARGB(255, 36, 36, 36),
         ),
         child: Column(
           children: [
@@ -80,7 +78,8 @@ class DrawerContent extends StatelessWidget {
                 automaticallyImplyLeading: false,
                 title: const Text('Drawer Header'),
                 leading: IconButton(
-                  icon: const Icon(Icons.menu),
+                  icon: const Icon(Icons.menu, color: Color(0xffffffff)),
+
                   onPressed: () => controller.close(),
                 ),
               ),
@@ -90,12 +89,18 @@ class DrawerContent extends StatelessWidget {
                 children: [
                   ListTile(
                     leading: const Icon(Icons.home, color: Colors.white),
-                    title: const Text('Home', style: TextStyle(color: Colors.white)),
+                    title: const Text(
+                      'Home',
+                      style: TextStyle(color: Colors.white),
+                    ),
                     onTap: () {},
                   ),
                   ListTile(
                     leading: const Icon(Icons.settings, color: Colors.white),
-                    title: const Text('Settings', style: TextStyle(color: Colors.white)),
+                    title: const Text(
+                      'Settings',
+                      style: TextStyle(color: Colors.white),
+                    ),
                     onTap: () {},
                   ),
                 ],
@@ -116,22 +121,31 @@ class MainContent extends StatelessWidget {
     required this.controller,
     required this.showMenuButton,
   }) : super(key: key);
-    
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 47, 47, 47),
       appBar: AppBar(
-        title: const Text('Sliding Drawer Example'),
+        backgroundColor: Color.fromARGB(255, 47, 47, 47),
+        title: const Text(
+          'Sliding Drawer Example',
+          style: TextStyle(color: Color.fromARGB(255, 202, 202, 202)),
+        ),
         automaticallyImplyLeading: false,
-        leading: showMenuButton
-            ? IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () => controller.open(),
-              )
-            : null,
+        leading:
+            showMenuButton
+                ? IconButton(
+                  icon: const Icon(Icons.menu, color: Color(0xffffffff)),
+                  onPressed: () => controller.open(),
+                )
+                : null,
       ),
       body: const Center(
-        child: Text('Swipe right from the left edge to open the drawer'),
+        child: Text(
+          'Swipe right from the left edge to open the drawer',
+          style: TextStyle(color: Color.fromARGB(255, 179, 179, 179)),
+        ),
       ),
     );
   }
