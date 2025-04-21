@@ -153,6 +153,7 @@ When creating a `SlidingDrawer`, you can customize its behavior and appearance u
 ## Additional Information
 
 - **Issues:** If you encounter any problems or have suggestions, please open an issue on the [issue tracker](https://github.com/hruzgar/flutter_responsive_sliding_drawer/issues).
-- **License:** This project is licensed under the MIT License - see the `LICENSE` file for details.
+- **License:** This project is licensed under the terms of the GNU Lesser General Public License v3.0.
+See the `LICENSE` file for details.
 
 Feel free to open a pull request if you’d like to add more features or improve the widget. Happy coding!
