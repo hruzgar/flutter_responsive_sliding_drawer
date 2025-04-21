@@ -23,6 +23,10 @@ Added descriptions for the new parameters in the readme.
 Added scrim area for main window on mobile. Added additional parameters for adjustment. 
 Made draggable area on desktop adjustable with custom parameter and adjusted default value.
 
-## 1.4.1
+## 1.4.1    (2025-03-17)
 
 All bugs fixed. Working as expected.
+
+## 1.5.0    (2025-04-21)
+
+Fixed all glaring issues, adjusted behaviour on Desktop Platforms, improved example project and example.gif file

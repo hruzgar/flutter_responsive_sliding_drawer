@@ -15,7 +15,6 @@ dependencies:
 
 
   cupertino_icons: ^1.0.8
-  flutter_slide_drawer: ^1.0.3
   
   responsive_sliding_drawer:
     path: ../

@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sliding Drawer Demo',
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+      theme: ThemeData(useMaterial3: true),
       home: const HomeScreen(),
     );
   }
@@ -28,31 +28,31 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final SlidingDrawerController _drawerController = SlidingDrawerController();
   bool _showMainMenuButton = true;
+  bool _isLightTheme = false;
 
   @override
   Widget build(BuildContext context) {
     return SlidingDrawer(
       controller: _drawerController,
       onStartedOpening: () {
-        print("Opening started!");
-        setState(() {
-          _showMainMenuButton = false;
-        });
+        setState(() => _showMainMenuButton = false);
       },
-      onFinishedOpening: () => print("Opening finished!"),
-      onStartedClosing: () => print("Closing started!"),
+      onFinishedOpening: () {},
+      onStartedClosing: () {},
       onFinishedClosing: () {
-        print("Closing finished!");
-        setState(() {
-          _showMainMenuButton = true;
-        });
+        setState(() => _showMainMenuButton = true);
       },
-      drawer: DrawerContent(controller: _drawerController),
+      drawer: DrawerContent(
+        controller: _drawerController,
+        isLightTheme: _isLightTheme,
+        toggleTheme: () => setState(() => _isLightTheme = !_isLightTheme),
+      ),
       body: MainContent(
         controller: _drawerController,
         showMenuButton: _showMainMenuButton,
+        isLightTheme: _isLightTheme,
       ),
-      scrimColor: const Color.fromARGB(255, 255, 255, 255),
+      scrimColor: _isLightTheme ? Colors.black : Colors.white,
       scrimColorOpacity: 0.3,
       scrimGradientStartOpacity: 0.2,
       scrimGradientWidth: 4,
@@ -62,48 +62,61 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class DrawerContent extends StatelessWidget {
   final SlidingDrawerController controller;
-  const DrawerContent({Key? key, required this.controller}) : super(key: key);
+  final bool isLightTheme;
+  final VoidCallback toggleTheme;
+
+  const DrawerContent({
+    Key? key,
+    required this.controller,
+    required this.isLightTheme,
+    required this.toggleTheme,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = isLightTheme ? Colors.white : Colors.grey[900];
+    final textColor = isLightTheme ? Colors.black : Colors.white;
+
     return Material(
-      color: Colors.grey[900],
+      color: backgroundColor,
       child: Theme(
         data: ThemeData(
-          brightness: Brightness.dark,
-          primaryColor: const Color.fromARGB(255, 36, 36, 36),
+          brightness: isLightTheme ? Brightness.light : Brightness.dark,
+          primaryColor: backgroundColor,
         ),
         child: Column(
           children: [
             SafeArea(
               child: AppBar(
-                backgroundColor: Colors.grey[900],
+                backgroundColor: backgroundColor,
                 automaticallyImplyLeading: false,
-                title: const Text('Drawer Header'),
+                title: Text(
+                  'Drawer Header',
+                  style: TextStyle(color: textColor),
+                ),
                 leading: IconButton(
-                  icon: const Icon(Icons.menu, color: Color(0xffffffff)),
-
+                  icon: Icon(Icons.menu, color: textColor),
                   onPressed: () => controller.close(),
                 ),
               ),
+            ),
+            SwitchListTile(
+              title: Text('Light Theme', style: TextStyle(color: textColor)),
+              value: isLightTheme,
+              onChanged: (_) => toggleTheme(),
+              secondary: Icon(Icons.light_mode, color: textColor),
             ),
             Expanded(
               child: ListView(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.home, color: Colors.white),
-                    title: const Text(
-                      'Home',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    leading: Icon(Icons.home, color: textColor),
+                    title: Text('Home', style: TextStyle(color: textColor)),
                     onTap: () {},
                   ),
                   ListTile(
-                    leading: const Icon(Icons.settings, color: Colors.white),
-                    title: const Text(
-                      'Settings',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    leading: Icon(Icons.settings, color: textColor),
+                    title: Text('Settings', style: TextStyle(color: textColor)),
                     onTap: () {},
                   ),
                 ],
@@ -119,35 +132,52 @@ class DrawerContent extends StatelessWidget {
 class MainContent extends StatelessWidget {
   final SlidingDrawerController controller;
   final bool showMenuButton;
+  final bool isLightTheme;
+
   const MainContent({
     Key? key,
     required this.controller,
     required this.showMenuButton,
+    required this.isLightTheme,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 245, 245, 245)
+            : const Color.fromARGB(255, 47, 47, 47);
+    final textColor =
+        isLightTheme
+            ? const Color.fromARGB(255, 33, 33, 33)
+            : const Color.fromARGB(255, 202, 202, 202);
+    final iconColor = isLightTheme ? Colors.black : Colors.white;
+
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 47, 47, 47),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 47, 47, 47),
-        title: const Text(
-          'Sliding Drawer Example',
-          style: TextStyle(color: Color.fromARGB(255, 202, 202, 202)),
+        backgroundColor: backgroundColor,
+        title: Text(
+          // 'Sliding Drawer Example',
+          'Windows (desktop platforms)',
+          style: TextStyle(color: textColor),
         ),
         automaticallyImplyLeading: false,
         leading:
             showMenuButton
                 ? IconButton(
-                  icon: const Icon(Icons.menu, color: Color(0xffffffff)),
+                  icon: Icon(Icons.menu, color: iconColor),
                   onPressed: () => controller.open(),
                 )
                 : null,
       ),
-      body: const Center(
-        child: Text(
-          'Swipe right from the left edge to open the drawer',
-          style: TextStyle(color: Color.fromARGB(255, 179, 179, 179)),
+      body: Padding(
+        padding: EdgeInsets.all(20),
+        child: Center(
+          child: Text(
+            'Swiping right does not work here. On desktop platforms you have use the controller (with a button for example) to open/close the drawer.',
+            style: TextStyle(color: textColor),
+          ),
         ),
       ),
     );
