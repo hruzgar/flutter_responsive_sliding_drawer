@@ -30,3 +30,7 @@ All bugs fixed. Working as expected.
 ## 1.5.0    (2025-04-21)
 
 Fixed all glaring issues, adjusted behaviour on Desktop Platforms, improved example project and example.gif file
+
+## 1.5.1    (2025-04-21)
+
+Updated README file.

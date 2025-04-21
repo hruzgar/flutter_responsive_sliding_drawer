@@ -1,23 +1,26 @@
 # Responsive Sliding Drawer Flutter Widget
 
-A responsive sliding drawer for Flutter inspired by the official ChatGPT Android app. This widget adapts to both mobile and desktop layouts, providing smooth sliding animations and customizable behavior based on your design requirements.
+A responsive sliding drawer for Flutter inspired by the official ChatGPT Android app. It adjust its behaviour based on screen width but also the platform it detects which leads to an overall responsive experience. On mobile it fully mimics the sliding drawer behaviour and design from the ChatGPT Android app.
 
 ![](https://raw.githubusercontent.com/hruzgar/flutter_responsive_sliding_drawer/refs/heads/main/example.gif)
 
-## Features
 
-- **Responsive Layout:** Automatically adjusts behavior for mobile (gestures on the entire screen) and desktop (resizable drawer and distinct drag areas).
-- **Smooth Animations:** Customizable animation duration and swipe thresholds for a fluid experience.
-- **Gesture Support:** Easily open/close the drawer with horizontal drag gestures.
-- **Resizable Desktop Drawer:** Drag the divider on desktop to resize the drawer within defined minimum and maximum widths.
-- **Custom Callbacks:** Execute actions when the drawer animation completes.
+## Features & Behaviour
+
+- **Responsive Layout:** The drawer adjusts its behavior depending on screen size and platform. On **mobile**, you can swipe anywhere on the screen to open or close it. On **desktop**, it behaves more like a traditional side panel with a draggable area and a resizable width.
+- **Smart Gesture Handling:** Gestures feel intuitive across platforms. On Android and iOS, horizontal swipes control the drawer. On desktop platforms, gestures are limited to a small drag zone near the drawer for a more controlled experience.
+- **Resizable on Desktop:** On wider screens (like tablets or desktops), the drawer can be resized by dragging the divider. You can set minimum and maximum widths, and the resizing even handles edge cases smoothly.
+- **Smooth Animations:** Opening and closing the drawer is animated with clean transitions. You can tweak the speed, how fast a swipe needs to be, and how far it should go to trigger the drawer.
+- **Custom Callbacks:** Easily hook into the drawer’s lifecycle. Run custom logic when it starts or finishes opening or closing, or when the animation completes.
+- **Scrim Overlay (Mobile):** When the drawer is open on mobile, a dimmed background appears behind it, complete with a subtle gradient on the edge. Tapping or swiping this area also closes the drawer.
+- **Built-in Controller:** Control the drawer programmatically using the included `SlidingDrawerController`. You can open, close, or toggle it from anywhere in your app.
+
 
 ## Getting Started
 
 ### Prerequisites
 
 - Flutter 2.0 or higher
-- A basic understanding of Flutter widgets and state management
 
 ### Installation
 
@@ -25,9 +28,9 @@ Add this package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  sliding_drawer: ^1.0.0
+  responsive_sliding_drawer: ^1.5.1
 ```
-> **Note:** Replace `^1.0.0` with the latest version or the version you need.
+> (Replace `^1.5.1` with the latest version or the version you need.)
 
 Then run:
 
@@ -39,7 +42,7 @@ flutter pub get
 
 ## Usage
 
-To use the `SlidingDrawer` widget in your Flutter project, simply wrap your main content and drawer content shown in the example below:
+To use the `SlidingDrawer` widget in your Flutter project, simply wrap your main content and drawer content shown in the example below (for a more comprehensive example as in the example gif above, you can run the example project included in the repository and get inspiration from there):
 
 ```dart
 import 'package:flutter/material.dart';
@@ -140,6 +143,11 @@ When creating a `SlidingDrawer`, you can customize its behavior and appearance u
 - **`swipeVelocityThreshold`**: The minimum swipe velocity required to trigger the open/close action.
 - **`dragPercentageThreshold`**: The drag percentage needed to complete an open/close action if the swipe velocity is low.
 - **`onAnimationComplete`**: A callback function that is called once the drawer has finished animating.
+Here are the missing descriptions for the remaining parameters:
+- **`onFinishedOpening`**: A callback function that is triggered once the drawer has fully opened.
+- **`onFinishedClosing`**: A callback function that is triggered once the drawer has fully closed.
+- **`onStartedOpening`**: A callback function that is called when the drawer starts to open.
+- **`onStartedClosing`**: A callback function that is called when the drawer starts to close.
 - **`dividerWidth`**: The width of the draggable divider between the drawer and the body on desktop devices.
 - **`centerDivider`**: A boolean that determines whether the divider is centered along the edge of the open drawer.
 - **`controller`**: An optional `SlidingDrawerController` that allows you to programmatically open, close, or toggle the drawer.
