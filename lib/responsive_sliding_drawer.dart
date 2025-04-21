@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 enum _DrawerAction { open, close }
+
 enum _DrawerDragDirection { opening, closing }
 
 class SlidingDrawerController {
@@ -196,9 +199,7 @@ class _SlidingDrawerState extends State<SlidingDrawer>
       widget.onFinishedOpening?.call();
       return;
     }
-    _controller
-        .animateTo(1.0, duration: widget.animationDuration)
-        .then((_) {
+    _controller.animateTo(1.0, duration: widget.animationDuration).then((_) {
       _isOpen = true;
       widget.onAnimationComplete?.call(true);
       widget.onFinishedOpening?.call();
@@ -217,9 +218,7 @@ class _SlidingDrawerState extends State<SlidingDrawer>
       widget.onFinishedClosing?.call();
       return;
     }
-    _controller
-        .animateTo(0.0, duration: widget.animationDuration)
-        .then((_) {
+    _controller.animateTo(0.0, duration: widget.animationDuration).then((_) {
       _isOpen = false;
       widget.onAnimationComplete?.call(false);
       widget.onFinishedClosing?.call();
@@ -304,10 +303,15 @@ class _SlidingDrawerState extends State<SlidingDrawer>
               final dx = -drawerWidth * (1 - _controller.value);
               return Transform.translate(
                 offset: Offset(dx, 0),
-                child: Container(
-                  width: drawerWidth,
-                  height: MediaQuery.of(context).size.height,
-                  child: widget.drawer,
+                child: GestureDetector(
+                  onHorizontalDragStart: _handleDragStart,
+                  onHorizontalDragUpdate: _handleDragUpdate,
+                  onHorizontalDragEnd: _handleDragEnd,
+                  child: Container(
+                    width: drawerWidth,
+                    height: MediaQuery.of(context).size.height,
+                    child: widget.drawer,
+                  ),
                 ),
               );
             },
@@ -327,9 +331,10 @@ class _SlidingDrawerState extends State<SlidingDrawer>
           ),
           if (drawerFullyOpen)
             Positioned(
-              left: widget.centerDivider
-                  ? drawerWidth - widget.dividerWidth / 2
-                  : drawerWidth,
+              left:
+                  widget.centerDivider
+                      ? drawerWidth - widget.dividerWidth / 2
+                      : drawerWidth,
               top: 0,
               bottom: 0,
               width: widget.dividerWidth,
@@ -339,9 +344,10 @@ class _SlidingDrawerState extends State<SlidingDrawer>
                 cursor: SystemMouseCursors.resizeColumn,
                 child: AnimatedOpacity(
                   duration: const Duration(milliseconds: 200),
-                  opacity: (_isHoveringDivider || _resizeOvershoot != 0.0)
-                      ? 1.0
-                      : 0.0,
+                  opacity:
+                      (_isHoveringDivider || _resizeOvershoot != 0.0)
+                          ? 1.0
+                          : 0.0,
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onPanStart: (_) {
@@ -375,6 +381,7 @@ class _SlidingDrawerState extends State<SlidingDrawer>
       // Mobile layout: The whole main area is draggable.
       return Stack(
         children: [
+          // if (Platform.isAndroid || Platform.isIOS)
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
@@ -386,9 +393,18 @@ class _SlidingDrawerState extends State<SlidingDrawer>
                   onTap: () {
                     if (drawerFullyOpen) _toggleDrawer();
                   },
-                  onHorizontalDragStart: _handleDragStart,
-                  onHorizontalDragUpdate: _handleDragUpdate,
-                  onHorizontalDragEnd: _handleDragEnd,
+                  onHorizontalDragStart:
+                      Platform.isAndroid || Platform.isIOS
+                          ? _handleDragStart
+                          : null,
+                  onHorizontalDragUpdate:
+                      Platform.isAndroid || Platform.isIOS
+                          ? _handleDragUpdate
+                          : null,
+                  onHorizontalDragEnd:
+                      Platform.isAndroid || Platform.isIOS
+                          ? _handleDragEnd
+                          : null,
                   child: widget.body,
                 ),
               );
@@ -413,43 +429,44 @@ class _SlidingDrawerState extends State<SlidingDrawer>
                       width: MediaQuery.of(context).size.width,
                       height: MediaQuery.of(context).size.height,
                       decoration: BoxDecoration(
-                        color: widget.scrimColor.withOpacity(
-                          widget.scrimColorOpacity * _controller.value,
+                        color: widget.scrimColor.withValues(
+                          alpha: widget.scrimColorOpacity * _controller.value,
                         ),
                       ),
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            left: 0,
-                            top: 0,
-                            bottom: 0,
-                            width: widget.scrimGradientWidth,
-                            child: IgnorePointer(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                    colors: [
-                                      widget.scrimColor.withOpacity(
-                                        widget.scrimGradientStartOpacity *
-                                            _controller.value,
-                                      ),
-                                      Colors.transparent,
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      // child: Stack(
+                      //   children: [
+                      //     Positioned(
+                      //       left: 0,
+                      //       top: 0,
+                      //       bottom: 0,
+                      //       width: widget.scrimGradientWidth,
+                      //       child: IgnorePointer(
+                      //         child: Container(
+                      //           decoration: BoxDecoration(
+                      //             gradient: LinearGradient(
+                      //               begin: Alignment.centerLeft,
+                      //               end: Alignment.centerRight,
+                      //               colors: [
+                      //                 widget.scrimColor.withValues(
+                      //                   alpha: 0.3 * _controller.value,
+                      //                 ),
+                      //                 widget.scrimColor.withValues(alpha: 0),
+                      //                 // Colors.transparent,
+                      //               ],
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
                     ),
                   ),
                 ),
               );
             },
           ),
+          // if (Platform.isAndroid || Platform.isIOS)
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {

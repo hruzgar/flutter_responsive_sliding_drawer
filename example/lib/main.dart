@@ -52,7 +52,10 @@ class _HomeScreenState extends State<HomeScreen> {
         controller: _drawerController,
         showMenuButton: _showMainMenuButton,
       ),
-      lightShadow: true,
+      scrimColor: const Color.fromARGB(255, 255, 255, 255),
+      scrimColorOpacity: 0.3,
+      scrimGradientStartOpacity: 0.2,
+      scrimGradientWidth: 4,
     );
   }
 }
