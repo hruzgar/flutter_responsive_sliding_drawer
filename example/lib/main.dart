@@ -6,7 +6,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,26 +19,30 @@ class MyApp extends StatelessWidget {
 }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final SlidingDrawerController _drawerController = SlidingDrawerController();
+  final ResponsiveSlidingDrawerController _drawerController =
+      ResponsiveSlidingDrawerController();
   bool _showMainMenuButton = true;
   bool _isLightTheme = false;
 
   @override
   Widget build(BuildContext context) {
-    return SlidingDrawer(
+    final backgroundColor =
+        _isLightTheme ? Colors.white : const Color(0xFF212121);
+    final textColor = _isLightTheme ? Colors.black : Colors.white;
+
+    return ResponsiveSlidingDrawer(
       controller: _drawerController,
+      isDarkMode: !_isLightTheme,
       onStartedOpening: () {
         setState(() => _showMainMenuButton = false);
       },
-      onFinishedOpening: () {},
-      onStartedClosing: () {},
       onFinishedClosing: () {
         setState(() => _showMainMenuButton = true);
       },
@@ -46,43 +50,45 @@ class _HomeScreenState extends State<HomeScreen> {
         controller: _drawerController,
         isLightTheme: _isLightTheme,
         toggleTheme: () => setState(() => _isLightTheme = !_isLightTheme),
+        backgroundColor: backgroundColor,
+        textColor: textColor,
       ),
       body: MainContent(
         controller: _drawerController,
         showMenuButton: _showMainMenuButton,
         isLightTheme: _isLightTheme,
+        backgroundColor: backgroundColor,
+        textColor: textColor,
       ),
-      scrimColor: _isLightTheme ? Colors.black : Colors.white,
-      scrimColorOpacity: 0.3,
-      scrimGradientStartOpacity: 0.2,
-      scrimGradientWidth: 4,
     );
   }
 }
 
 class DrawerContent extends StatelessWidget {
-  final SlidingDrawerController controller;
+  final ResponsiveSlidingDrawerController controller;
   final bool isLightTheme;
   final VoidCallback toggleTheme;
+  final Color backgroundColor;
+  final Color textColor;
 
   const DrawerContent({
-    Key? key,
+    super.key,
     required this.controller,
     required this.isLightTheme,
     required this.toggleTheme,
-  }) : super(key: key);
+    required this.backgroundColor,
+    required this.textColor,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isLightTheme ? Colors.white : Colors.grey[900];
-    final textColor = isLightTheme ? Colors.black : Colors.white;
-
     return Material(
       color: backgroundColor,
       child: Theme(
         data: ThemeData(
           brightness: isLightTheme ? Brightness.light : Brightness.dark,
           primaryColor: backgroundColor,
+          applyElevationOverlayColor: false,
         ),
         child: Column(
           children: [
@@ -130,35 +136,28 @@ class DrawerContent extends StatelessWidget {
 }
 
 class MainContent extends StatelessWidget {
-  final SlidingDrawerController controller;
+  final ResponsiveSlidingDrawerController controller;
   final bool showMenuButton;
   final bool isLightTheme;
+  final Color backgroundColor;
+  final Color textColor;
 
   const MainContent({
-    Key? key,
+    super.key,
     required this.controller,
     required this.showMenuButton,
     required this.isLightTheme,
-  }) : super(key: key);
+    required this.backgroundColor,
+    required this.textColor,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor =
-        isLightTheme
-            ? const Color.fromARGB(255, 245, 245, 245)
-            : const Color.fromARGB(255, 47, 47, 47);
-    final textColor =
-        isLightTheme
-            ? const Color.fromARGB(255, 33, 33, 33)
-            : const Color.fromARGB(255, 202, 202, 202);
-    final iconColor = isLightTheme ? Colors.black : Colors.white;
-
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: backgroundColor,
         title: Text(
-          // 'Sliding Drawer Example',
           'Windows (desktop platforms)',
           style: TextStyle(color: textColor),
         ),
@@ -166,7 +165,7 @@ class MainContent extends StatelessWidget {
         leading:
             showMenuButton
                 ? IconButton(
-                  icon: Icon(Icons.menu, color: iconColor),
+                  icon: Icon(Icons.menu, color: textColor),
                   onPressed: () => controller.open(),
                 )
                 : null,

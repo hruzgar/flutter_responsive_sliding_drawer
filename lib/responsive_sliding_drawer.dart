@@ -6,42 +6,104 @@ import 'package:flutter/material.dart';
 
 enum _DrawerDragDirection { opening, closing }
 
-class SlidingDrawerController {
-  _SlidingDrawerState? _state;
+class ResponsiveSlidingDrawerController {
+  _ResponsiveSlidingDrawerState? _state;
   void open() => _state?._openDrawer();
   void close() => _state?._closeDrawer();
   void toggle() => _state?._toggleDrawer();
 }
 
-class SlidingDrawer extends StatefulWidget {
+class ResponsiveSlidingDrawer extends StatefulWidget {
+  /// The widget to be displayed in the drawer panel.
   final Widget drawer;
+
+  /// The main content widget that will be displayed alongside the drawer.
   final Widget body;
+
+  /// The duration for the opening and closing animations of the drawer.
   final Duration animationDuration;
+
+  /// The ratio of the screen width that the drawer should occupy when open on mobile devices.
+  /// Defaults to 0.80 (80% of screen width).
   final double openRatio;
+
+  /// The ratio of the screen width that the drawer should occupy when open on desktop devices.
+  /// Defaults to 0.3 (30% of screen width).
   final double desktopOpenRatio;
+
+  /// The minimum width the drawer can be resized to on desktop devices.
   final double desktopMinDrawerWidth;
+
+  /// The maximum width the drawer can be resized to on desktop devices.
   final double desktopMaxDrawerWidth;
+
+  /// The minimum swipe velocity required to trigger opening or closing the drawer.
   final double swipeVelocityThreshold;
+
+  /// The percentage of the drawer width that needs to be dragged to trigger opening or closing after the drag ends.
   final double dragPercentageThreshold;
+
+  /// A callback function that is invoked when the drawer finishes its opening or closing animation.
+  /// Provides a boolean value indicating whether the drawer is now open (true) or closed (false).
   final void Function(bool isOpen)? onAnimationComplete;
 
-  // Callback parameters.
+  /// Callback invoked when the drawer has fully finished opening.
   final VoidCallback? onFinishedOpening;
+
+  /// Callback invoked when the drawer has fully finished closing.
   final VoidCallback? onFinishedClosing;
+
+  /// Callback invoked when the drawer starts its opening animation or drag.
   final VoidCallback? onStartedOpening;
+
+  /// Callback invoked when the drawer starts its closing animation or drag.
   final VoidCallback? onStartedClosing;
 
+  /// The width of the draggable divider used for resizing on desktop.
   final double dividerWidth;
+
+  /// Whether the desktop resize divider should be centered over the edge or placed entirely outside the drawer.
+  /// If true, the divider is centered (half inside, half outside the drawer bounds).
+  /// If false, the divider is placed entirely to the right of the drawer.
   final bool centerDivider;
-  final SlidingDrawerController? controller;
+
+  /// An optional controller to programmatically open, close, or toggle the drawer state.
+  final ResponsiveSlidingDrawerController? controller;
+
+  /// The width of the invisible area on the edge of the screen (or drawer edge when open)
+  /// that triggers the drag gesture on desktop.
   final double desktopDragAreaWidth;
-  final Color scrimColor;
-  final double scrimColorOpacity;
-  final double scrimGradientStartOpacity;
+
+  /// The color of the scrim overlay that appears over the body when the drawer is open in light mode.
+  /// This color will be adjusted with a dynamic opacity value to create an overlay over the main content.
+  final Color scrimColorLightMode;
+
+  /// The color of the scrim overlay that appears over the body when the drawer is open in dark mode.
+  /// This color will be adjusted with a dynamic opacity value to create an overlay over the main content.
+  final Color scrimColorDarkMode;
+
+  /// The maximum opacity of the scrim overlay in light mode when the drawer is fully open.
+  final double scrimColorOpacityLightMode;
+
+  /// The maximum opacity of the scrim overlay in dark mode when the drawer is fully open.
+  final double scrimColorOpacityDarkMode;
+
+  /// The starting opacity of the gradient applied to the edge of the scrim overlay in light mode.
+  /// This creates a subtle shadow effect.
+  final double scrimGradientStartOpacityLightMode;
+
+  /// The starting opacity of the gradient applied to the edge of the scrim overlay in dark mode.
+  /// This creates a subtle shadow effect.
+  final double scrimGradientStartOpacityDarkMode;
+
+  /// The width of the gradient applied to the edge of the scrim overlay.
   final double scrimGradientWidth;
 
-  const SlidingDrawer({
-    Key? key,
+  /// A boolean flag indicating whether the application is currently in dark mode.
+  /// This determines which scrim color and opacity settings are used.
+  final bool isDarkMode;
+
+  const ResponsiveSlidingDrawer({
     required this.drawer,
     required this.body,
     this.animationDuration = const Duration(milliseconds: 60),
@@ -50,7 +112,7 @@ class SlidingDrawer extends StatefulWidget {
     this.desktopMinDrawerWidth = 150.0,
     this.desktopMaxDrawerWidth = 400.0,
     this.swipeVelocityThreshold = 500.0,
-    this.dragPercentageThreshold = 0.5,
+    this.dragPercentageThreshold = 0.3,
     this.onAnimationComplete,
     this.onFinishedOpening,
     this.onFinishedClosing,
@@ -60,17 +122,23 @@ class SlidingDrawer extends StatefulWidget {
     this.centerDivider = true,
     this.controller,
     this.desktopDragAreaWidth = 10.0,
-    this.scrimColor = Colors.black,
-    this.scrimColorOpacity = 0.5,
-    this.scrimGradientStartOpacity = 0.10,
-    this.scrimGradientWidth = 6.0,
-  }) : super(key: key);
+    this.scrimColorLightMode = Colors.black,
+    this.scrimColorDarkMode = Colors.white,
+    this.scrimColorOpacityLightMode = 0.36,
+    this.scrimColorOpacityDarkMode = 0.38,
+    this.scrimGradientStartOpacityLightMode = 0.14,
+    this.scrimGradientStartOpacityDarkMode = 0.2,
+    this.scrimGradientWidth = 16.0,
+    required this.isDarkMode,
+    super.key,
+  });
 
   @override
-  _SlidingDrawerState createState() => _SlidingDrawerState();
+  State<ResponsiveSlidingDrawer> createState() =>
+      _ResponsiveSlidingDrawerState();
 }
 
-class _SlidingDrawerState extends State<SlidingDrawer>
+class _ResponsiveSlidingDrawerState extends State<ResponsiveSlidingDrawer>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   double? _desktopDrawerWidth;
@@ -100,7 +168,7 @@ class _SlidingDrawerState extends State<SlidingDrawer>
   }
 
   @override
-  void didUpdateWidget(covariant SlidingDrawer oldWidget) {
+  void didUpdateWidget(covariant ResponsiveSlidingDrawer oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller?._state = null;
@@ -269,6 +337,18 @@ class _SlidingDrawerState extends State<SlidingDrawer>
   Widget build(BuildContext context) {
     final drawerWidth = _currentDrawerWidth;
     final bool drawerFullyOpen = _controller.value >= 1.0 - 0.001;
+    final isDarkMode = widget.isDarkMode;
+
+    final Color currentScrimColor =
+        isDarkMode ? widget.scrimColorDarkMode : widget.scrimColorLightMode;
+    final double currentScrimOpacity =
+        isDarkMode
+            ? widget.scrimColorOpacityDarkMode
+            : widget.scrimColorOpacityLightMode;
+    final double currentGradientStartOpacity =
+        isDarkMode
+            ? widget.scrimGradientStartOpacityDarkMode
+            : widget.scrimGradientStartOpacityLightMode;
 
     if (isDesktop) {
       return Stack(
@@ -426,42 +506,84 @@ class _SlidingDrawerState extends State<SlidingDrawer>
                         Platform.isAndroid || Platform.isIOS
                             ? _handleDragEnd
                             : null,
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height,
-                      decoration: BoxDecoration(
-                        color: widget.scrimColor.withValues(
-                          alpha: widget.scrimColorOpacity * _controller.value,
-                        ),
-                      ),
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            left: 0,
-                            top: 0,
-                            bottom: 0,
-                            width: widget.scrimGradientWidth,
-                            child: IgnorePointer(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                    colors: [
-                                      widget.scrimColor.withValues(
-                                        alpha:
-                                            widget.scrimGradientStartOpacity *
-                                            _controller.value,
-                                      ),
-                                      Colors.transparent,
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
+                    child: Stack(
+                      children: [
+                        Container(
+                          color: currentScrimColor.withValues(
+                            alpha: currentScrimOpacity * _controller.value,
                           ),
-                        ],
-                      ),
+                        ),
+                        Positioned(
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: widget.scrimGradientWidth,
+                          child: IgnorePointer(
+                            child:
+                                isDarkMode
+                                    ? Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.centerLeft,
+                                          end: Alignment.centerRight,
+                                          colors: [
+                                            Colors.black.withValues(
+                                              alpha:
+                                                  currentGradientStartOpacity *
+                                                  _controller.value,
+                                            ),
+                                            Colors.black.withValues(
+                                              alpha:
+                                                  (currentGradientStartOpacity *
+                                                      _controller.value) *
+                                                  0.5,
+                                            ),
+                                            Colors.black.withValues(
+                                              alpha:
+                                                  (currentGradientStartOpacity *
+                                                      _controller.value) *
+                                                  0.2,
+                                            ),
+                                            Colors.black.withValues(alpha: 0.0),
+                                          ],
+                                          stops: const [0.0, 0.2, 0.6, 1.0],
+                                        ),
+                                      ),
+                                    )
+                                    : Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.centerLeft,
+                                          end: Alignment.centerRight,
+                                          colors: [
+                                            currentScrimColor.withValues(
+                                              alpha:
+                                                  currentGradientStartOpacity *
+                                                  _controller.value,
+                                            ),
+                                            currentScrimColor.withValues(
+                                              alpha:
+                                                  (currentGradientStartOpacity *
+                                                      _controller.value) *
+                                                  0.5,
+                                            ),
+                                            currentScrimColor.withValues(
+                                              alpha:
+                                                  (currentGradientStartOpacity *
+                                                      _controller.value) *
+                                                  0.2,
+                                            ),
+                                            currentScrimColor.withValues(
+                                              alpha: 0.0,
+                                            ),
+                                          ],
+                                          stops: const [0.0, 0.2, 0.6, 1.0],
+                                        ),
+                                      ),
+                                    ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

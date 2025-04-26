@@ -34,3 +34,7 @@ Fixed all glaring issues, adjusted behaviour on Desktop Platforms, improved exam
 ## 1.5.1    (2025-04-21)
 
 Updated README file.
+
+## 1.6.0 (2025-04-26)
+
+Adjusted scrim gradient even more to perfectly mimic the ChatGPT Android App. Also edited the readme and improved code style of the example app.
